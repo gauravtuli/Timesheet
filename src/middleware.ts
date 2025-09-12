@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSessionFromRequest } from './lib/auth'
 
 export const config = {
   matcher: ['/dashboard/:path*', '/admin/:path*']
 }
 
 export function middleware(req: NextRequest) {
-  const session = getSessionFromRequest(req)
+  // Edge-safe: only check for presence of auth cookie (do NOT verify JWT here)
+  const token = req.cookies.get('mt_auth')?.value
   const url = req.nextUrl
 
-  if (!session) {
+  if (!token) {
     url.pathname = '/'
     return NextResponse.redirect(url)
   }
 
-  if (url.pathname.startsWith('/admin') && session.role !== 'ADMIN') {
+  // Basic path guard: block /admin for non-admins using a lightweight hint cookie.
+  // (Actual role enforcement still happens on the server pages/API.)
+  const role = req.cookies.get('mt_role')?.value // optional: set this cookie at login
+  if (url.pathname.startsWith('/admin') && role !== 'ADMIN') {
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
