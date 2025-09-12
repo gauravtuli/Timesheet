@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = env("DATABASE_PROVIDER")
+  url      = env("DATABASE_URL")
+}
+
+/// Default to SQLite locally; allow override to Postgres on Vercel
+// Create a .env with DATABASE_URL and DATABASE_PROVIDER if needed
+// If DATABASE_PROVIDER is not set, Prisma will read provider from here:
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(USER)
+  password  String
+  createdAt DateTime @default(now())
+  Timesheet TimesheetEntry[]
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  entries   TimesheetEntry[]
+}
+
+model TimesheetEntry {
+  id           String   @id @default(cuid())
+  userId       String
+  clientId     String
+  month        String   // format: YYYY-MM
+  details      String
+  actualHours  Float
+  nextMonthProjectedHours Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([userId, month])
+  @@index([clientId, month])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+enum Role {
+  USER
+  ADMIN
+}
