@@ -1,37 +1,27 @@
 // src/app/admin/page.tsx
 import { PrismaClient } from '@prisma/client'
 
+// Prisma Client instance
 const prisma = new PrismaClient()
 
-// getServerSideProps is used for Server-Side Rendering (SSR)
-export async function getServerSideProps() {
-  try {
-    // Fetch data from the database at runtime (when the page is requested)
-    const data = await prisma.someModel.findMany()  // Replace `someModel` with your actual model
+// This is a Server Component that fetches data during rendering
+export default async function AdminPage() {
+  // Fetch data from the database when the page is rendered
+  let data = []
 
-    return {
-      props: {
-        data,  // Pass the fetched data to the page component
-      },
-    }
+  try {
+    // Use Prisma to fetch the data from your database
+    data = await prisma.someModel.findMany()  // Replace `someModel` with your actual model name
   } catch (error) {
     console.error("Error fetching data:", error)
-
-    // Handle errors, like DB connection failures or query errors
-    return {
-      props: {
-        data: [],  // Return an empty array or appropriate fallback data
-      },
-    }
+    data = []  // Fallback to empty array in case of an error
   }
-}
 
-export default function AdminPage({ data }) {
   return (
     <div>
       <h1>Admin Dashboard</h1>
       <h3>Data Fetched from Database:</h3>
-      <pre>{JSON.stringify(data, null, 2)}</pre>  {/* Display the data */}
+      <pre>{JSON.stringify(data, null, 2)}</pre>  {/* Display the fetched data */}
     </div>
   )
 }
