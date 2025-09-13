@@ -1,15 +1,15 @@
 // src/app/admin/page.tsx
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, TimesheetEntry } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 // This is a Server Component that fetches data during rendering
 export default async function AdminPage() {
-  let data = []
+  // Explicitly type 'data' as an array of TimesheetEntry objects
+  let data: TimesheetEntry[] = []
 
   try {
-    // Fetch TimesheetEntry data from the database
-    // Adjusting to fetch all timesheet entries, with related user and client data
+    // Fetch TimesheetEntry data from the database, including related user and client data
     data = await prisma.timesheetEntry.findMany({
       include: {
         user: true,   // Include related user data
@@ -18,7 +18,7 @@ export default async function AdminPage() {
     })
   } catch (error) {
     console.error("Error fetching data:", error)
-    data = []  // Fallback to empty array in case of an error
+    data = []  // Fallback to an empty array in case of an error
   }
 
   return (
