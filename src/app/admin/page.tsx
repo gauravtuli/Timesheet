@@ -1,17 +1,21 @@
 // src/app/admin/page.tsx
 import { PrismaClient } from '@prisma/client'
 
-// Prisma Client instance
 const prisma = new PrismaClient()
 
 // This is a Server Component that fetches data during rendering
 export default async function AdminPage() {
-  // Fetch data from the database when the page is rendered
   let data = []
 
   try {
-    // Use Prisma to fetch the data from your database
-    data = await prisma.someModel.findMany()  // Replace `someModel` with your actual model name
+    // Fetch TimesheetEntry data from the database
+    // Adjusting to fetch all timesheet entries, with related user and client data
+    data = await prisma.timesheetEntry.findMany({
+      include: {
+        user: true,   // Include related user data
+        client: true, // Include related client data
+      },
+    })
   } catch (error) {
     console.error("Error fetching data:", error)
     data = []  // Fallback to empty array in case of an error
@@ -21,7 +25,8 @@ export default async function AdminPage() {
     <div>
       <h1>Admin Dashboard</h1>
       <h3>Data Fetched from Database:</h3>
-      <pre>{JSON.stringify(data, null, 2)}</pre>  {/* Display the fetched data */}
+      {/* Display the data fetched from the database */}
+      <pre>{JSON.stringify(data, null, 2)}</pre>  
     </div>
   )
 }
